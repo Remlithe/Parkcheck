@@ -91,10 +91,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 height: 55,
                 child: OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
-                    foregroundColor: const Color(0xFF007AFF),
-                    side: const BorderSide(color: Color(0xFF007AFF)),
+                    foregroundColor: Colors.white,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    backgroundColor: Colors.white,
+                    backgroundColor: Color(0xFF007AFF),
                   ),
                   onPressed: _signOut,
                   icon: const Icon(Icons.logout),

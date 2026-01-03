@@ -6,7 +6,7 @@ import 'package:cloud_functions/cloud_functions.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:flutter_stripe/flutter_stripe.dart' hide Card; 
-
+import 'package:flutter_svg/flutter_svg.dart'; // <--- Import SVG
 import '../models/user_model.dart';
 import '../models/parking_area_model.dart';
 import '../services/parking_service.dart';
@@ -173,9 +173,6 @@ class _ParkingScreenState extends State<ParkingScreen> {
 
     try {
       final firestore = FirebaseFirestore.instance;
-
-      // 1. <<< NOWOŚĆ: Sprawdź RZECZYWISTĄ liczbę aktywnych sesji przed startem >>>
-      // Ignorujemy pole 'occupiedSpots' w dokumencie parkingu, bo może być błędne (np. 8/5)
       final activeSessionsSnapshot = await firestore
           .collection('parking_sessions')
           .where('parkingId', isEqualTo: parking.id)
@@ -185,10 +182,8 @@ class _ParkingScreenState extends State<ParkingScreen> {
       final int realOccupiedCount = activeSessionsSnapshot.docs.length;
 
       if (realOccupiedCount >= parking.totalCapacity) {
-        // Jeśli jest pełny, przerywamy i wyświetlamy błąd
         throw Exception("Parking jest pełny! (${realOccupiedCount}/${parking.totalCapacity})");
       }
-      // -----------------------------------------------------------------------
 
       final parkingRef = firestore.collection('parking_spots').doc(parking.id);
       final sessionRef = firestore.collection('parking_sessions').doc();
@@ -200,7 +195,6 @@ class _ParkingScreenState extends State<ParkingScreen> {
           throw Exception("Parking nie istnieje!");
         }
 
-        // Aktualizujemy licznik w bazie (nawet jak jest zły, dodajemy +1, ale ważniejsze jest sprawdzenie wyżej)
         int currentOccupiedInDb = parkingSnapshot.data()?['occupiedSpots'] ?? 0;
         
         transaction.update(parkingRef, {
@@ -229,7 +223,6 @@ class _ParkingScreenState extends State<ParkingScreen> {
       _listenToSessionChanges(sessionRef.id);
 
     } catch (e) {
-      // Wyświetlanie błędu (np. o pełnym parkingu)
       String errorMsg = e.toString();
       if (errorMsg.contains("Exception:")) {
         errorMsg = errorMsg.replaceAll("Exception: ", "");
@@ -363,17 +356,14 @@ class _ParkingScreenState extends State<ParkingScreen> {
 
       await Stripe.instance.presentPaymentSheet();
       
-      // SUKCES: Jeśli kod doszedł tutaj, czyścimy ewentualne błędy w bazie
       await FirebaseFirestore.instance.collection('parking_sessions').doc(_activeSessionId).update({
-        'paymentStatus': 'success', // NOWE
-        'lastError': FieldValue.delete(), // NOWE
+        'paymentStatus': 'success', 
+        'lastError': FieldValue.delete(), 
       });
 
       await _finalizeSessionInDb(paid: true, isFree: false);
 
     } on StripeException catch (e) {
-      // PORAŻKA STRIPE: Zapisujemy to w bazie, żeby Właściciel widział!
-      // --- NOWA SEKCJA START ---
       if (_activeSessionId != null) {
         FirebaseFirestore.instance.collection('parking_sessions').doc(_activeSessionId).update({
           'paymentStatus': 'failed',
@@ -381,7 +371,6 @@ class _ParkingScreenState extends State<ParkingScreen> {
           'lastAttemptTime': FieldValue.serverTimestamp(),
         });
       }
-      // --- NOWA SEKCJA STOP ---
 
       if (e.error.code == FailureCode.Canceled) {
         setState(() {
@@ -394,14 +383,12 @@ class _ParkingScreenState extends State<ParkingScreen> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Błąd Stripe: ${e.error.localizedMessage}")));
       }
     } catch (e) {
-       // INNE BŁĘDY: Też możemy zapisać
       if (_activeSessionId != null) {
         FirebaseFirestore.instance.collection('parking_sessions').doc(_activeSessionId).update({
           'paymentStatus': 'error',
           'lastError': e.toString(),
         });
       }
-
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Błąd: $e")));
     } finally {
       if (mounted) setState(() => _isLoadingAction = false);
@@ -446,7 +433,7 @@ class _ParkingScreenState extends State<ParkingScreen> {
         return AlertDialog(
           backgroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(20), // Zaokrąglenie samego okienka
+            borderRadius: BorderRadius.circular(20),
           ),
           icon: const Icon(Icons.check_circle, size: 60, color: Colors.blue),
           title: const Text("GOTOWE"),
@@ -457,21 +444,20 @@ class _ParkingScreenState extends State<ParkingScreen> {
           actionsAlignment: MainAxisAlignment.center,
           actions: [
             Padding(
-              padding: const EdgeInsets.only(bottom: 10), // Odstęp od dołu okna
+              padding: const EdgeInsets.only(bottom: 10),
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue, // Tło niebieskie
-                  foregroundColor: Colors.white, // Tekst biały
-                  // Poniżej kluczowe zmiany dla wyglądu "głównego przycisku":
-                  minimumSize: const Size(200, 50), // Szerokość: 200, Wysokość: 50
+                  backgroundColor: Colors.blue,
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(200, 50),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12), // Zaokrąglenie rogów przycisku
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   textStyle: const TextStyle(
-                    fontSize: 18, // Większa czcionka
-                    fontWeight: FontWeight.bold, // Pogrubienie tekstu
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
                   ),
-                  elevation: 5, // Lekki cień pod przyciskiem
+                  elevation: 5,
                 ),
                 onPressed: () => Navigator.pop(ctx),
                 child: const Text("OK"),
@@ -481,9 +467,33 @@ class _ParkingScreenState extends State<ParkingScreen> {
         );
       },
     );
-}
+  }
 
   // --- UI ---
+
+  // --- ZMIANA TUTAJ: PODMIANA HEADERA NA LOGO SVG ---
+  Widget _buildHeader() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        // Podmiana "imitacji" (kółko i tekst) na logo SVG
+        SvgPicture.asset(
+          'assets/images/Parkcheck.svg',
+          width: 164,
+          height: 67,
+          fit: BoxFit.contain,
+        ),
+        
+        // Guzik debugowania zostaje po prawej
+        if (_activeSessionId != null)
+          IconButton(
+            icon: const Icon(Icons.fast_forward, color: Colors.grey),
+            tooltip: "Debug: Dodaj 15 min",
+            onPressed: _debugAdd15Minutes,
+          ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -496,7 +506,6 @@ class _ParkingScreenState extends State<ParkingScreen> {
         bottom: false, 
         child: Stack(
           children: [
-            // TREŚĆ (Listy)
             StreamBuilder<List<ParkingAreaModel>>(
               stream: _parkingService.getParkingAreas(), 
               builder: (context, snapshotAll) {
@@ -504,7 +513,6 @@ class _ParkingScreenState extends State<ParkingScreen> {
                 
                 final allSpots = snapshotAll.data ?? [];
 
-                // Decyzja czy pokazać panel info (potrzebna do paddingu)
                 ParkingAreaModel? nearestForCheck;
                 bool isNearForCheck = false;
                 if (_currentPosition != null && allSpots.isNotEmpty) {
@@ -519,7 +527,6 @@ class _ParkingScreenState extends State<ParkingScreen> {
                    if (minDst <= 50) isNearForCheck = true;
                 }
                 
-                // Logika paddingu listy
                 bool showInfoPanel = !isParking && isNearForCheck && nearestForCheck != null;
                 final double contentPaddingBottom = showInfoPanel ? 250.0 : 100.0;
 
@@ -611,7 +618,6 @@ class _ParkingScreenState extends State<ParkingScreen> {
               }
             ),
 
-            // PŁYWAJĄCE ELEMENTY (STICKY)
             StreamBuilder<List<ParkingAreaModel>>(
               stream: _parkingService.getParkingAreas(),
               builder: (ctx, snap) {
@@ -634,7 +640,6 @@ class _ParkingScreenState extends State<ParkingScreen> {
 
                 return Stack(
                   children: [
-                    // A. PANEL INFO
                     if (showInfoPanel)
                       Positioned(
                         left: 16,
@@ -643,7 +648,6 @@ class _ParkingScreenState extends State<ParkingScreen> {
                         child: _buildNearestSpotInfo(nearestForButton!),
                       ),
 
-                    // B. GUZIK
                     Positioned(
                       bottom: 16, 
                       left: 16,
@@ -660,38 +664,7 @@ class _ParkingScreenState extends State<ParkingScreen> {
     );
   }
 
-  // --- WIDGETY POMOCNICZE ---
-
-  Widget _buildHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: const BoxDecoration(color: Color(0xFF007AFF), shape: BoxShape.circle),
-              child: const Icon(Icons.check, color: Colors.white, size: 20),
-            ),
-            const SizedBox(width: 10),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: const [
-                Text("PARK", style: TextStyle(color: Color(0xFF007AFF), fontWeight: FontWeight.w900, fontSize: 18, height: 1)),
-                Text("CHECK", style: TextStyle(color: Color(0xFF007AFF), fontWeight: FontWeight.w900, fontSize: 18, height: 1)),
-              ],
-            )
-          ],
-        ),
-        if (_activeSessionId != null)
-          IconButton(
-            icon: const Icon(Icons.fast_forward, color: Colors.grey),
-            tooltip: "Debug: Dodaj 15 min",
-            onPressed: _debugAdd15Minutes,
-          ),
-      ],
-    );
-  }
+  // --- WIDGETY POMOCNICZE (Reszta bez zmian) ---
 
   Widget _buildNearestSpotInfo(ParkingAreaModel spot) {
     return Container(
@@ -903,16 +876,15 @@ class _ParkingScreenState extends State<ParkingScreen> {
             distanceText = _formatDistance(dist);
           }
 
-          // --- LOGIKA KOLORÓW DLA ZAJĘTOŚCI ---
           Color occupancyColor;
           double ratio = spot.totalCapacity > 0 ? realOccupancy / spot.totalCapacity : 0.0;
 
           if (ratio >= 0.9) {
             occupancyColor = Colors.red;
           } else if (ratio >= 0.5) {
-            occupancyColor = Colors.amber[800]!; // Żółty/Pomarańczowy (czytelniejszy na białym)
+            occupancyColor = Colors.amber[800]!; 
           } else {
-            occupancyColor = const Color(0xFF007AFF); // Niebieski (Domyślny)
+            occupancyColor = const Color(0xFF007AFF); 
           }
 
           return Container(
@@ -1051,13 +1023,19 @@ class _ParkingScreenState extends State<ParkingScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(isParking ? Icons.payment : Icons.local_parking, size: 28),
-            const SizedBox(width: 12),
-            Text(
-              text,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-            ),
+            // ZMIANA: Podmiana ikony na GATE.svg
+            if (!isParking) 
+              SvgPicture.asset(
+                'assets/images/Gate.svg', // Upewnij się co do wielkości liter (Gate.svg vs GATE.svg w assets)
+                width: 42,
+                height: 42,
+                colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
+              )
+            else
+              const Icon(Icons.payment, size: 28), 
+            
+            const SizedBox(width: 15),
+            Text(text, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           ],
         ),
       ),

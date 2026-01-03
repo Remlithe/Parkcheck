@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import '../services/auth_service.dart';
 import 'registration_screen.dart';
 import 'main_screen.dart';
@@ -11,16 +12,15 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  // --- ZMIENNE (BEZ ZMIAN) ---
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   
-  // Focus nodes
   final _emailFocus = FocusNode();
   final _passwordFocus = FocusNode();
 
-  // Zmienne na błędy
-  String? _emailError;    // Błąd formatu (pod inputem)
-  String? _generalError;  // Błąd logowania (nad inputami)
+  String? _emailError;    
+  String? _generalError;  
 
   final _authService = AuthService(); 
   bool _isLoading = false;
@@ -40,7 +40,6 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   Future<void> _login() async {
-    // 1. Reset błędów przed nową próbą
     setState(() {
       _emailError = null;
       _generalError = null;
@@ -49,7 +48,6 @@ class _LoginScreenState extends State<LoginScreen> {
     String email = _emailController.text.trim();
     String password = _passwordController.text.trim();
 
-    // 2. Walidacja lokalna (puste pola i format emaila)
     bool isValid = true;
 
     if (email.isEmpty) {
@@ -61,15 +59,11 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     if (password.isEmpty) {
-      // Hasło nie wymaga walidacji formatu przy logowaniu, tylko czy jest wpisane
-      // Możemy wyświetlić ogólny błąd jeśli puste, lub snackbar. 
-      // Tutaj założymy, że puste hasło to błąd ogólny lub po prostu blokada.
-      // Dla lepszego UX przy logowaniu często waliduje się tylko czy pola są pełne.
       setState(() => _generalError = "Uzupełnij wszystkie dane");
       return; 
     }
 
-    if (!isValid) return; // Jeśli format emaila zły, nie pytamy Firebase
+    if (!isValid) return;
 
     setState(() => _isLoading = true);
 
@@ -90,8 +84,6 @@ class _LoginScreenState extends State<LoginScreen> {
       }
     } catch (e) {
       if (mounted) {
-        // Tutaj łapiemy błędy z Firebase (np. user-not-found, wrong-password)
-        // I wyświetlamy je jako jeden ogólny błąd NAD inputami
         setState(() {
           _generalError = "Błędny email lub hasło";
         });
@@ -101,123 +93,119 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
+  // --- BUDOWA WIDOKU (NOWA STRUKTURA) ---
   @override
   Widget build(BuildContext context) {
-    final bottomPadding = MediaQuery.of(context).viewInsets.bottom;
-
     return Scaffold(
       backgroundColor: Colors.white,
-      resizeToAvoidBottomInset: false, // Guzik i layout stabilny
+      // To jest FUNDAMENTALNE - blokuje zmiany rozmiaru okna przy klawiaturze
+      resizeToAvoidBottomInset: false, 
+      
+      // Używamy Stack, aby elementy były niezależne od siebie
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            // --- GÓRA I ŚRODEK (Przewijalne) ---
-            Expanded(
-              child: Center(
-                child: SingleChildScrollView(
-                  padding: EdgeInsets.only(
-                    left: 24.0, 
-                    right: 24.0, 
-                    bottom: bottomPadding + 20
-                  ),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      const Icon(Icons.local_parking, size: 80, color: Color(0xFF007AFF)),
-                      const SizedBox(height: 20),
-                      const Text(
-                        "ParkCheck",
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                      ),
-                      const SizedBox(height: 30),
+            // --- 1. LOGO (Pozycja absolutna) ---
+            Positioned(
+              top: 20,
+              left: 20,
+              child: SvgPicture.asset(
+                'assets/images/Parkcheck.svg',
+                width: 164,
+                height: 67,
+              ),
+            ),
 
-                      // --- OGÓLNY BŁĄD (Nad inputami) ---
-                      if (_generalError != null)
-                        Padding(
-                          padding: const EdgeInsets.only(bottom: 16.0),
-                          child: Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: Colors.red.shade50,
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.red.shade200)
-                            ),
-                            child: Row(
-                              children: [
-                                const Icon(Icons.error_outline, color: Colors.red, size: 20),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    _generalError!,
-                                    style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ),
-                              ],
-                            ),
+            // --- 2. INPUTY (Idealnie wyśrodkowane) ---
+            // Center ignoruje inne elementy w Stacku, po prostu bierze środek ekranu
+            Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min, // Ważne: Kolumna zajmuje tylko tyle miejsca ile potrzebują inputy
+                  children: [
+                    
+                    if (_generalError != null)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 16.0),
+                        child: Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: Colors.red.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: Colors.red.shade200)
                           ),
-                        ),
-                      
-                      _buildInput(
-                        _emailController, "Email", Icons.email, 
-                        type: TextInputType.emailAddress,
-                        focusNode: _emailFocus,
-                        nextFocus: _passwordFocus,
-                        errorText: _emailError // Błąd formatu pod polem
-                      ),
-                      const SizedBox(height: 16),
-                      
-                      _buildInput(
-                        _passwordController, "Hasło", Icons.lock, 
-                        isObscure: true,
-                        focusNode: _passwordFocus,
-                        isLast: true, 
-                        onSubmitted: (_) => _login(),
-                        // Hasło przy logowaniu zazwyczaj nie pokazuje błędów walidacji pod spodem,
-                        // błąd hasła wpada do _generalError.
-                      ),
-
-                      const SizedBox(height: 20),
-
-                      // Link do rejestracji
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => const RegistrationScreen()),
-                          );
-                        },
-                        child: RichText(
-                          text: const TextSpan(
-                            style: TextStyle(color: Colors.grey, fontSize: 14, fontFamily: 'Roboto'),
+                          child: Row(
                             children: [
-                              TextSpan(text: "Nie masz konta? "),
-                              TextSpan(
-                                text: "Zarejestruj się", 
-                                style: TextStyle(
-                                  color: Color(0xFF007AFF),
-                                  fontWeight: FontWeight.bold, 
-                                  decoration: TextDecoration.underline
-                                )
+                              const Icon(Icons.error_outline, color: Colors.red, size: 20),
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Text(
+                                  _generalError!,
+                                  style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                                  textAlign: TextAlign.center,
+                                ),
                               ),
                             ],
                           ),
                         ),
                       ),
-                    ],
-                  ),
+                    
+                    _buildInput(
+                      _emailController, "Email", Icons.email, 
+                      type: TextInputType.emailAddress,
+                      focusNode: _emailFocus,
+                      nextFocus: _passwordFocus,
+                      errorText: _emailError
+                    ),
+                    const SizedBox(height: 16),
+                    
+                    _buildInput(
+                      _passwordController, "Hasło", Icons.lock, 
+                      isObscure: true,
+                      focusNode: _passwordFocus,
+                      isLast: true, 
+                      onSubmitted: (_) => _login(),
+                    ),
+
+                    const SizedBox(height: 20),
+
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (context) => const RegistrationScreen()),
+                        );
+                      },
+                      child: RichText(
+                        text: const TextSpan(
+                          style: TextStyle(color: Colors.grey, fontSize: 14, fontFamily: 'Roboto'),
+                          children: [
+                            TextSpan(text: "Nie masz konta? "),
+                            TextSpan(
+                              text: "Zarejestruj się", 
+                              style: TextStyle(
+                                color: Color(0xFF007AFF),
+                                fontWeight: FontWeight.bold, 
+                                decoration: TextDecoration.underline
+                              )
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ),
             ),
 
-            // --- DÓŁ: BUTTON (Sticky) ---
-            Padding(
-              padding: const EdgeInsets.all(24.0),
+            // --- 3. PRZYCISK (Przypięty do dołu) ---
+            Positioned(
+              bottom: 24,
+              left: 24,
+              right: 24,
               child: SizedBox(
                 height: 55,
-                width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: const Color(0xFF007AFF),
@@ -247,7 +235,7 @@ class _LoginScreenState extends State<LoginScreen> {
       FocusNode? nextFocus,
       bool isLast = false,
       Function(String)? onSubmitted,
-      String? errorText, // Dodany parametr błędu
+      String? errorText,
     }) {
     return TextField(
       controller: ctrl,
@@ -266,7 +254,7 @@ class _LoginScreenState extends State<LoginScreen> {
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
         filled: true,
         fillColor: Colors.grey[50],
-        errorText: errorText, // Wyświetlanie błędu pod polem
+        errorText: errorText,
       ),
     );
   }

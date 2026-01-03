@@ -3,6 +3,7 @@ import 'parking_screen.dart';
 import 'map_screen.dart';
 import 'profile_screen.dart';
 import 'favorites_screen.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
