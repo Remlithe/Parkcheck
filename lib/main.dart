@@ -104,8 +104,35 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       title: 'ParkCheck Klient',
       theme: ThemeData(primarySwatch: Colors.blue),
-      home: AuthGate(),
+      home: const AuthGate(),
+      
+      // DODAJEMY TEN PARAMETR PONIŻEJ:
+      builder: (context, child) {
+        return Scaffold(
+          backgroundColor: Colors.grey[200], // Kolor tła po bokach "telefonu" na komputerze
+          body: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(
+                maxWidth: 450, // Maksymalna szerokość ekranu aplikacji (wielkość telefonu)
+              ),
+              child: Container(
+                decoration: BoxDecoration(
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.1),
+                      blurRadius: 10,
+                      spreadRadius: 2,
+                    ),
+                  ],
+                ),
+                child: child,
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
+}
   
 }
