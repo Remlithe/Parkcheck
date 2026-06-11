@@ -1,3 +1,29 @@
-# parkcheck
+# 🚗 Parkcheck - Mobile Application
 
-A new Flutter project.
+Modern multiplatform mobile application built with **Flutter** and **Firebase**, designed for finding and managing parking areas.
+
+## 🚀 Live Web Preview
+You can test the mobile interface directly in your browser here:  
+👉 **[CLICK HERE TO OPEN LIVE PREVIEW](https://remlithe.github.io/Parkcheck/)**
+
+---
+
+## 📱 Interface & Screenshots
+
+| Login Screen | Interactive Map | Parking Details |
+| :---: | :---: | :---: |
+| <img src="./images/login.png" width="220"> | <img src="./images/map.png" width="220"> | <img src="./images/parking.png" width="220"> |
+
+### Key Features:
+* **Interactive Map View:** Browse available parking spaces in real-time (`map_screen.dart`)[cite: 1].
+* **Firebase Authentication:** Secure user registration and login (`auth_service.dart`)[cite: 1].
+* **Favorites System:** Save your preferred parking spots for quick access (`favorites_screen.dart`)[cite: 1].
+* **Profile & Payments:** Manage user profiles and mock payment configurations (`payment_setup_screen.dart`)[cite: 1].
+
+---
+
+## 🛠️ Technology Stack & Architecture
+
+* **Frontend:** Flutter & Dart (Web build deployed on GitHub Pages)[cite: 1]
+* **Backend:** Firebase (Authentication & cloud configurations)[cite: 1]
+* **Data Layer:** Clean models implemented for structural handling (`parking_area_model.dart`, `user_model.dart`)[cite: 1].
