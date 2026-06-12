@@ -45,6 +45,13 @@ class _PaymentSetupScreenState extends State<PaymentSetupScreen> {
   void initState() {
     super.initState();
     _nameController.text = '${widget.firstName} ${widget.lastName}';
+    
+    // Jeśli to wersja przeglądarkowa, wypełnij formularz automatycznie testową kartą
+    if (kIsWeb) {
+      _cardNumberController.text = '4242 4242 4242 4242';
+      _expiryController.text = '12/29';
+      _cvvController.text = '123';
+    }
   }
 
   @override
@@ -96,14 +103,23 @@ class _PaymentSetupScreenState extends State<PaymentSetupScreen> {
   Future<void> _completeRegistration() async {
     setState(() => _errorMessage = null);
 
-    if (!_formKey.currentState!.validate()) return;
+    
+    if (!kIsWeb) {
+      if (!_formKey.currentState!.validate()) return;
+    }
 
     setState(() => _isLoading = true);
 
     try {
       const testPaymentMethodId = 'pm_card_visa';
-      final cardNumber = _cardNumberController.text.replaceAll(' ', '');
-      final last4 = cardNumber.substring(cardNumber.length - 4);
+      String last4 = '4242'; 
+      
+      if (!kIsWeb) {
+        final cardNumber = _cardNumberController.text.replaceAll(' ', '');
+        if (cardNumber.length >= 4) {
+          last4 = cardNumber.substring(cardNumber.length - 4);
+        }
+      }
       
       final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('createCustomer');
       final result = await callable.call({
@@ -114,6 +130,7 @@ class _PaymentSetupScreenState extends State<PaymentSetupScreen> {
       
       final stripeCustomerId = result.data['customerId'];
       final paymentMethodId = result.data['paymentMethodId'];
+      
       
       final userModel = await _authService.registerWithEmailPassword(
         email: widget.email,
@@ -127,7 +144,14 @@ class _PaymentSetupScreenState extends State<PaymentSetupScreen> {
       );
 
       if (mounted && userModel != null) {
-        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Rejestracja pomyślna!')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(kIsWeb 
+              ? 'Rejestracja pomyślna (Wersja Demo Web)!' 
+              : 'Rejestracja pomyślna!'
+            )
+          )
+        );
         Navigator.of(context).popUntil((route) => route.isFirst);
       }
     } catch (e) {
