@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_functions/cloud_functions.dart';
 import '../services/auth_service.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:flutter_stripe/flutter_stripe.dart' if (dart.library.html) 'package:flutter/material.dart';
 
 class PaymentSetupScreen extends StatefulWidget {
   final String firstName;
