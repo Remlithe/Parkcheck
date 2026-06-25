@@ -10,6 +10,7 @@ import 'package:flutter_svg/flutter_svg.dart'; // <--- Import SVG
 import '../models/user_model.dart';
 import '../models/parking_area_model.dart';
 import '../services/parking_service.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class ParkingScreen extends StatefulWidget {
   final VoidCallback? onFindParking;
@@ -325,7 +326,19 @@ class _ParkingScreenState extends State<ParkingScreen> {
       if (_currentCost < 2.00) { 
         throw "Kwota poniżej 2 zł nie jest obsługiwana przez płatności online."; 
       }
+      if (kIsWeb) {
+        
+        await Future.delayed(const Duration(seconds: 1)); 
+        
+        await FirebaseFirestore.instance.collection('parking_sessions').doc(_activeSessionId).update({
+          'paymentStatus': 'success', 
+          'note': 'Symulacja Web',
+        });
 
+        await _finalizeSessionInDb(paid: true, isFree: false);
+        _showPaidPopup(message: "SYMULACJA WEB: Płatność udana.");
+        return; 
+      }
       final ownerDoc = await FirebaseFirestore.instance.collection('owners').doc(_activeParking!.ownerUid).get();
       final ownerStripeId = ownerDoc.data()?['stripeAccountId'];
       if (ownerStripeId == null) throw "Właściciel nie skonfigurował płatności";
