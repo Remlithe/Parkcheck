@@ -40,7 +40,14 @@ void main() async {
     ));
   }
 }
-
+class AppScrollBehavior extends MaterialScrollBehavior {
+  @override
+  Set<PointerDeviceKind> get dragDevices => {
+    PointerDeviceKind.touch,
+    PointerDeviceKind.mouse,
+    PointerDeviceKind.trackpad,
+  };
+}
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
@@ -49,18 +56,8 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       title: 'ParkCheck Klient',
       theme: ThemeData(primarySwatch: Colors.blue),
-
-      scrollBehavior: const MaterialScrollBehavior().copyWith(
-        dragDevices: {
-          PointerDeviceKind.mouse, 
-          PointerDeviceKind.touch,   
-          PointerDeviceKind.stylus,  
-          PointerDeviceKind.trackpad 
-        },
-      ),
-      
-      home: const AuthGate(),
-      
+      sscrollBehavior: AppScrollBehavior(),
+      home: const AuthGate(), 
       builder: (context, child) {
         return Scaffold(
           backgroundColor: Colors.grey[200], 
