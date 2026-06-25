@@ -469,14 +469,10 @@ class _ParkingScreenState extends State<ParkingScreen> {
     );
   }
 
-  // --- UI ---
-
-  // --- ZMIANA TUTAJ: PODMIANA HEADERA NA LOGO SVG ---
   Widget _buildHeader() {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        // Podmiana "imitacji" (kółko i tekst) na logo SVG
         SvgPicture.asset(
           'assets/images/Parkcheck.svg',
           width: 164,
@@ -664,7 +660,6 @@ class _ParkingScreenState extends State<ParkingScreen> {
     );
   }
 
-  // --- WIDGETY POMOCNICZE (Reszta bez zmian) ---
 
   Widget _buildNearestSpotInfo(ParkingAreaModel spot) {
     return Container(
@@ -857,6 +852,7 @@ class _ParkingScreenState extends State<ParkingScreen> {
     return SizedBox(
       height: 110,
       child: ListView.separated(
+        padding: const EdgeInsets.only(right: 16),
         key: ValueKey('list_${isFavoriteList ? "fav" : "near"}_${spots.length}'), 
         scrollDirection: Axis.horizontal,
         clipBehavior: Clip.none,
@@ -1023,10 +1019,9 @@ class _ParkingScreenState extends State<ParkingScreen> {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // ZMIANA: Podmiana ikony na GATE.svg
             if (!isParking) 
               SvgPicture.asset(
-                'assets/images/Gate.svg', // Upewnij się co do wielkości liter (Gate.svg vs GATE.svg w assets)
+                'assets/images/Gate.svg',
                 width: 42,
                 height: 42,
                 colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
