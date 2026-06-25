@@ -60,7 +60,9 @@ class MainApp extends StatelessWidget {
                 maxHeight: 850
               ),
               child: Container(
+                clipBehavior: Clip.hardEdge,
                 decoration: BoxDecoration(
+                  color: Colors.white,
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.1),
