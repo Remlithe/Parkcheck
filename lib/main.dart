@@ -49,6 +49,16 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       title: 'ParkCheck Klient',
       theme: ThemeData(primarySwatch: Colors.blue),
+
+      scrollBehavior: const MaterialScrollBehavior().copyWith(
+        dragDevices: {
+          PointerDeviceKind.mouse, 
+          PointerDeviceKind.touch,   
+          PointerDeviceKind.stylus,  
+          PointerDeviceKind.trackpad 
+        },
+      ),
+      
       home: const AuthGate(),
       
       builder: (context, child) {
