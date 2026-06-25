@@ -4,6 +4,7 @@ import 'package:parkcheck/widgets/auth_gate.dart';
 import 'package:parkcheck/firebase_options.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_stripe/flutter_stripe.dart'; 
+import 'package:flutter/gestures.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
