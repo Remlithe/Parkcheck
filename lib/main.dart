@@ -56,7 +56,8 @@ class MainApp extends StatelessWidget {
           body: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(
-                maxWidth: 450, 
+                maxWidth: 400, 
+                maxHeight: 850
               ),
               child: Container(
                 decoration: BoxDecoration(
