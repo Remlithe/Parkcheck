@@ -3,20 +3,16 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:parkcheck/widgets/auth_gate.dart';
 import 'package:parkcheck/firebase_options.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
-import 'package:flutter_stripe/flutter_stripe.dart' if (dart.library.html) 'package:flutter/material.dart';
-
-
+import 'package:flutter_stripe/flutter_stripe.dart'; 
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   try {
-    // Inicjalizacja Firebase
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
     print('Firebase initialized successfully');
     
-    // Inicjalizacja Stripe - TYLKO jeśli aplikacja NIE JEST uruchomiona w przeglądarce (Web)
     if (!kIsWeb) {
       try {
         Stripe.publishableKey = 'pk_test_51SZtQM6TqOz44N4yRz4j6AiysVbnL3NjnCgm2zXtNSTlKYVaGkChUWPixVGmrKpEwNR5rG6A7S1GVnrd7O6boe5B004IwZL1aW';
@@ -43,6 +39,7 @@ void main() async {
     ));
   }
 }
+
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
 
@@ -53,14 +50,13 @@ class MainApp extends StatelessWidget {
       theme: ThemeData(primarySwatch: Colors.blue),
       home: const AuthGate(),
       
-      // DODAJEMY TEN PARAMETR PONIŻEJ:
       builder: (context, child) {
         return Scaffold(
-          backgroundColor: Colors.grey[200], // Kolor tła po bokach "telefonu" na komputerze
+          backgroundColor: Colors.grey[200], 
           body: Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(
-                maxWidth: 450, // Maksymalna szerokość ekranu aplikacji (wielkość telefonu)
+                maxWidth: 450, 
               ),
               child: Container(
                 decoration: BoxDecoration(
@@ -80,6 +76,4 @@ class MainApp extends StatelessWidget {
       },
     );
   }
-}
-  
 }
