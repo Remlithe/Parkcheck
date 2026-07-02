@@ -102333,29 +102333,30 @@ s=1
 break
 case 1:return A.t(q,r)}})
 return A.u($async$mr,r)},
-te(){var s=0,r=A.v(t.H),q=1,p=[],o=this,n,m,l,k,j,i,h,g,f
+te(){var s=0,r=A.v(t.H),q=1,p=[],o=this,n,m,l,k,j,i,h,g,f,e
 var $async$te=A.q(function(a,b){if(a===1){p.push(b)
 s=q}for(;;)switch(s){case 0:q=3
+n=50
 s=6
-return A.w(o.mr("assets/images/pin_red.png",100),$async$te)
-case 6:n=b
+return A.w(o.mr("assets/images/pin_red.png",n),$async$te)
+case 6:m=b
 s=7
-return A.w(o.mr("assets/images/pin_blue.png",100),$async$te)
-case 7:m=b
+return A.w(o.mr("assets/images/pin_blue.png",n),$async$te)
+case 7:l=b
 s=8
-return A.w(o.mr("assets/images/pin_black.png",100),$async$te)
-case 8:l=b
-k=new A.Cg(n,null)
+return A.w(o.mr("assets/images/pin_black.png",n),$async$te)
+case 8:k=b
 j=new A.Cg(m,null)
 i=new A.Cg(l,null)
-if(o.c!=null)o.T(new A.aDJ(o,k,j,i))
+h=new A.Cg(k,null)
+if(o.c!=null)o.T(new A.aDJ(o,j,i,h))
 q=1
 s=5
 break
 case 3:q=2
-f=p.pop()
-h=A.a6(f)
-A.ov("B\u0142\u0105d \u0142adowania ikon z assets: "+A.k(h))
+e=p.pop()
+g=A.a6(e)
+A.ov("B\u0142\u0105d \u0142adowania ikon z assets: "+A.k(g))
 if(o.c!=null)o.T(new A.aDK(o))
 s=5
 break
