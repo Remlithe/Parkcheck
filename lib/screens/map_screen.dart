@@ -1,14 +1,14 @@
 import 'dart:async';
-import 'dart:typed_data'; // <<< NOWY IMPORT konieczny do obsługi bitów
-import 'dart:ui' as ui;   // <<< NOWY IMPORT konieczny do skalowania obrazu
+import 'dart:typed_data';
+import 'dart:ui' as ui;  
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart'; // <<< NOWY IMPORT do rootBundle
+import 'package:flutter/services.dart'; 
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
+import 'package:flutter/foundation.dart' show kIsWeb;
 import '../models/parking_area_model.dart';
 import '../services/parking_service.dart';
 
@@ -79,21 +79,17 @@ class _MapScreenState extends State<MapScreen> {
     });
   }
 
-  // --- NOWA METODA POMOCNICZA DO SKALOWANIA IKON ---
   Future<Uint8List> getBytesFromAsset(String path, int width) async {
     ByteData data = await rootBundle.load(path);
     ui.Codec codec = await ui.instantiateImageCodec(data.buffer.asUint8List(), targetWidth: width);
     ui.FrameInfo fi = await codec.getNextFrame();
     return (await fi.image.toByteData(format: ui.ImageByteFormat.png))!.buffer.asUint8List();
   }
-  // -------------------------------------------------
 
   Future<void> _loadCustomMarkers() async {
     try {
-      // --- TUTAJ ZMIENIASZ ROZMIAR IKON ---
-      // Ustawiamy docelową szerokość w pikselach.
-      // Zacznij od 120. Jeśli nadal za duże, zmniejsz np. do 100 lub 80.
-      const int targetWidth = 100; 
+      
+      final int targetWidth = kIsWeb ? 50 : 100; 
 
       final Uint8List redBytes = await getBytesFromAsset('assets/images/pin_red.png', targetWidth);
       final Uint8List blueBytes = await getBytesFromAsset('assets/images/pin_blue.png', targetWidth);
@@ -113,7 +109,6 @@ class _MapScreenState extends State<MapScreen> {
       
     } catch (e) {
       print("Błąd ładowania ikon z assets: $e");
-      // Fallback do domyślnych, jeśli coś pójdzie nie tak
       if (mounted) {
         setState(() {
           _iconRed = BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed);
