@@ -1,4 +1,4 @@
-# 🚗 Parkcheck - Mobile Application
+ # 🚗 Parkcheck - Mobile Application
 
 Modern multiplatform mobile application built with **Flutter** and **Firebase**, designed for finding and managing parking areas.
 
@@ -12,7 +12,7 @@ You can test the mobile interface directly in your browser here:
 
 | Login Screen | Interactive Map | Parking Details |
 | :---: | :---: | :---: |
-| <img src="./images/login.png" width="220"> | <img src="./images/map.png" width="220"> | <img src="./images/parking.png" width="220"> |
+| <img src="./assets/images/login.png" width="220"> | <img src="./assets/images/map.png" width="220"> | <img src="./assets/images/parking.png" width="220"> |
 
 ### Key Features:
 * **Interactive Map View:** Browse available parking spaces in real-time (`map_screen.dart`)[cite: 1].
