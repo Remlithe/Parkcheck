@@ -109,8 +109,8 @@ Future<void> _completeRegistration() async {
     setState(() => _isLoading = true);
 
     try {
-      String? stripeCustomerId;
-      String? paymentMethodId;
+      String stripeCustomerId = 'simulated_customer';
+      String paymentMethodId = 'simulated_payment_method';
       String last4 = '4242'; 
       const testPaymentMethodId = 'pm_card_visa';
 
