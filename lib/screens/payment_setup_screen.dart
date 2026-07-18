@@ -46,7 +46,6 @@ class _PaymentSetupScreenState extends State<PaymentSetupScreen> {
     super.initState();
     _nameController.text = '${widget.firstName} ${widget.lastName}';
     
-    // Jeśli to wersja przeglądarkowa, wypełnij formularz automatycznie testową kartą
     if (kIsWeb) {
       _cardNumberController.text = '4242 4242 4242 4242';
       _expiryController.text = '12/29';
@@ -128,6 +127,21 @@ class _PaymentSetupScreenState extends State<PaymentSetupScreen> {
         'payment_method_id': testPaymentMethodId,
       });
       
+      String? stripeCustomerId;
+      String? paymentMethodId;
+
+      if (kIsWeb) {
+        await Future.delayed(const Duration(seconds: 1)); 
+        stripeCustomerId = 'simulated_customer_web';
+        paymentMethodId = testPaymentMethodId;
+      } else {
+        final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('createCustomer');
+        final result = await callable.call({
+          'email': widget.email,
+          'name': '${widget.firstName} ${widget.lastName}',
+          'payment_method_id': testPaymentMethodId,
+        });
+        
       final stripeCustomerId = result.data['customerId'];
       final paymentMethodId = result.data['paymentMethodId'];
       
@@ -171,7 +185,7 @@ class _PaymentSetupScreenState extends State<PaymentSetupScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
-      resizeToAvoidBottomInset: false, // Blokada skalowania
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
@@ -200,11 +214,9 @@ class _PaymentSetupScreenState extends State<PaymentSetupScreen> {
               ),
             ),
 
-            // ŚRODEK
             Expanded(
               child: Center(
                 child: SingleChildScrollView(
-                  // Padding manualny
                   padding: EdgeInsets.only(
                     left: 24.0, 
                     right: 24.0, 
@@ -267,7 +279,6 @@ class _PaymentSetupScreenState extends State<PaymentSetupScreen> {
               ),
             ),
 
-            // DÓŁ
             Padding(
               padding: const EdgeInsets.all(24.0),
               child: Column(
