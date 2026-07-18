@@ -99,10 +99,9 @@ class _PaymentSetupScreenState extends State<PaymentSetupScreen> {
     }
   }
 
-  Future<void> _completeRegistration() async {
+Future<void> _completeRegistration() async {
     setState(() => _errorMessage = null);
 
-    
     if (!kIsWeb) {
       if (!_formKey.currentState!.validate()) return;
     }
@@ -110,31 +109,21 @@ class _PaymentSetupScreenState extends State<PaymentSetupScreen> {
     setState(() => _isLoading = true);
 
     try {
-      const testPaymentMethodId = 'pm_card_visa';
-      String last4 = '4242'; 
-      
-      if (!kIsWeb) {
-        final cardNumber = _cardNumberController.text.replaceAll(' ', '');
-        if (cardNumber.length >= 4) {
-          last4 = cardNumber.substring(cardNumber.length - 4);
-        }
-      }
-      
-      final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('createCustomer');
-      final result = await callable.call({
-        'email': widget.email,
-        'name': '${widget.firstName} ${widget.lastName}',
-        'payment_method_id': testPaymentMethodId,
-      });
-      
       String? stripeCustomerId;
       String? paymentMethodId;
+      String last4 = '4242'; 
+      const testPaymentMethodId = 'pm_card_visa';
 
       if (kIsWeb) {
         await Future.delayed(const Duration(seconds: 1)); 
         stripeCustomerId = 'simulated_customer_web';
         paymentMethodId = testPaymentMethodId;
       } else {
+        final cardNumber = _cardNumberController.text.replaceAll(' ', '');
+        if (cardNumber.length >= 4) {
+          last4 = cardNumber.substring(cardNumber.length - 4);
+        }
+        
         final HttpsCallable callable = FirebaseFunctions.instance.httpsCallable('createCustomer');
         final result = await callable.call({
           'email': widget.email,
@@ -142,9 +131,9 @@ class _PaymentSetupScreenState extends State<PaymentSetupScreen> {
           'payment_method_id': testPaymentMethodId,
         });
         
-      final stripeCustomerId = result.data['customerId'];
-      final paymentMethodId = result.data['paymentMethodId'];
-      
+        stripeCustomerId = result.data['customerId'];
+        paymentMethodId = result.data['paymentMethodId'];
+      }
       
       final userModel = await _authService.registerWithEmailPassword(
         email: widget.email,
@@ -194,7 +183,6 @@ class _PaymentSetupScreenState extends State<PaymentSetupScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            // GÓRA
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
               child: Column(
